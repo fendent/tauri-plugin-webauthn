@@ -26,6 +26,10 @@
   let busy = $state(false);
   let logEl: HTMLElement | undefined = $state();
   let rpOrigin = $state('');
+  let rpId = $state('');
+  let showSettings = $state(false);
+  let settingsRpId = $state('');
+  let settingsRpOrigin = $state('');
 
   function timestamp() {
     return new Date().toLocaleTimeString();
@@ -33,10 +37,55 @@
 
   function log(level: LogEntry['level'], message: string) {
     logs.push({ time: timestamp(), level, message });
-    // scroll to bottom on next tick
     requestAnimationFrame(() => {
       if (logEl) logEl.scrollTop = logEl.scrollHeight;
     });
+  }
+
+  async function loadConfig() {
+    // Check localStorage first
+    const saved = localStorage.getItem('webauthn_rp_config');
+    if (saved) {
+      try {
+        const config = JSON.parse(saved);
+        await invoke('set_rp_config', { rpId: config.rp_id, rpOrigin: config.rp_origin });
+        rpId = config.rp_id;
+        rpOrigin = config.rp_origin;
+        return;
+      } catch {
+        localStorage.removeItem('webauthn_rp_config');
+      }
+    }
+    // Fall back to backend defaults (from env vars or hardcoded)
+    const config: { rp_id: string; rp_origin: string } = await invoke('get_rp_config');
+    rpId = config.rp_id;
+    rpOrigin = config.rp_origin;
+  }
+
+  async function saveSettings() {
+    try {
+      await invoke('set_rp_config', { rpId: settingsRpId, rpOrigin: settingsRpOrigin });
+      rpId = settingsRpId;
+      rpOrigin = settingsRpOrigin;
+      localStorage.setItem('webauthn_rp_config', JSON.stringify({ rp_id: rpId, rp_origin: rpOrigin }));
+      showSettings = false;
+      log('success', `RP config updated: ${rpId} (${rpOrigin})`);
+    } catch (e: any) {
+      log('error', `Failed to update RP config: ${e?.message ?? e}`);
+    }
+  }
+
+  function openSettings() {
+    settingsRpId = rpId;
+    settingsRpOrigin = rpOrigin;
+    showSettings = true;
+  }
+
+  function resetSettings() {
+    localStorage.removeItem('webauthn_rp_config');
+    showSettings = false;
+    // Reload to pick up env/default values
+    window.location.reload();
   }
 
   const reg = async () => {
@@ -52,11 +101,11 @@
         'reg_start',
         { name }
       );
-      log('info', 'Got challenge from server. Waiting for YubiKey...');
-      log('action', 'Insert or touch your YubiKey now.');
+      log('info', 'Got challenge from server. Waiting for authenticator...');
+      log('action', 'Use Touch ID, security key, or passkey now.');
 
       let response = await register(rpOrigin, options);
-      log('info', 'Got response from YubiKey. Verifying...');
+      log('info', 'Got response from authenticator. Verifying...');
 
       await invoke('reg_finish', { response });
       log('success', `Registration successful for "${name}"!`);
@@ -75,11 +124,11 @@
       log('info', 'Starting discoverable authentication...');
       let options: PublicKeyCredentialRequestOptionsJSON =
         await invoke('auth_start');
-      log('info', 'Got challenge. Waiting for YubiKey...');
-      log('action', 'Insert or touch your YubiKey now.');
+      log('info', 'Got challenge. Waiting for authenticator...');
+      log('action', 'Use Touch ID, security key, or passkey now.');
 
       let response = await authenticate(rpOrigin, options);
-      log('info', 'Got response from YubiKey. Verifying...');
+      log('info', 'Got response from authenticator. Verifying...');
 
       await invoke('auth_finish', { response });
       log('success', 'Authentication successful!');
@@ -104,11 +153,11 @@
         'auth_start_non_discoverable',
         { name: authName }
       );
-      log('info', 'Got challenge. Waiting for YubiKey...');
-      log('action', 'Insert or touch your YubiKey now.');
+      log('info', 'Got challenge. Waiting for authenticator...');
+      log('action', 'Use Touch ID, security key, or passkey now.');
 
       let response = await authenticate(rpOrigin, options);
-      log('info', 'Got response from YubiKey. Verifying...');
+      log('info', 'Got response from authenticator. Verifying...');
 
       await invoke('auth_finish_non_discoverable', { response });
       log('success', 'Authentication successful!');
@@ -126,9 +175,9 @@
       return;
     }
     try {
-      log('info', 'Sending PIN to YubiKey...');
+      log('info', 'Sending PIN...');
       await sendPin(pin);
-      log('info', 'PIN sent. Waiting for YubiKey response...');
+      log('info', 'PIN sent. Waiting for response...');
       pin = '';
       needsPin = false;
     } catch (e: any) {
@@ -137,21 +186,21 @@
   };
 
   onMount(async () => {
-    rpOrigin = await invoke('get_rp_origin');
-    log('info', `WebAuthn example ready. RP origin: ${rpOrigin}`);
+    await loadConfig();
+    log('info', `WebAuthn example ready. RP: ${rpId} (${rpOrigin})`);
     registerListener((event) => {
       switch (event.type) {
         case WebauthnEventType.SelectDevice:
           log('action', 'Multiple devices found. Touch the one you want to use.');
           break;
         case WebauthnEventType.PresenceRequired:
-          log('action', 'Touch your YubiKey to confirm.');
+          log('action', 'Touch your authenticator to confirm.');
           break;
         case WebauthnEventType.PinEvent:
           switch (event.event.type) {
             case PinEventType.PinRequired:
               needsPin = true;
-              log('action', 'YubiKey PIN required. Enter it below.');
+              log('action', 'PIN required. Enter it below.');
               break;
             case PinEventType.InvalidPin:
               needsPin = true;
@@ -160,11 +209,11 @@
               );
               break;
             case PinEventType.PinAuthBlocked:
-              log('error', 'PIN authentication blocked. Remove and re-insert YubiKey.');
+              log('error', 'PIN authentication blocked. Remove and re-insert device.');
               needsPin = false;
               break;
             case PinEventType.PinBlocked:
-              log('error', 'PIN is permanently blocked. YubiKey must be reset.');
+              log('error', 'PIN is permanently blocked. Device must be reset.');
               needsPin = false;
               break;
             case PinEventType.InvalidUv:
@@ -187,7 +236,31 @@
 </script>
 
 <main class="container">
-  <h2>WebAuthn Example</h2>
+  <div class="header">
+    <h2>WebAuthn Example</h2>
+    <button class="settings-btn" onclick={() => openSettings()} title="Settings">&#9881;</button>
+  </div>
+
+  {#if showSettings}
+    <section class="settings-modal">
+      <h3>RP Configuration</h3>
+      <form onsubmit={(e) => { e.preventDefault(); saveSettings(); }}>
+        <label>
+          RP ID
+          <input bind:value={settingsRpId} placeholder="e.g. webauthn.dkackman.com" />
+        </label>
+        <label>
+          RP Origin
+          <input bind:value={settingsRpOrigin} placeholder="e.g. https://webauthn.dkackman.com" />
+        </label>
+        <div class="settings-actions">
+          <button type="submit">Save</button>
+          <button type="button" class="secondary" onclick={() => showSettings = false}>Cancel</button>
+          <button type="button" class="danger" onclick={resetSettings}>Reset to Defaults</button>
+        </div>
+      </form>
+    </section>
+  {/if}
 
   <section class="actions">
     <div class="action-group">
@@ -216,7 +289,7 @@
 
   {#if needsPin}
     <section class="pin-prompt">
-      <h3>YubiKey PIN Required</h3>
+      <h3>PIN Required</h3>
       <form class="row" onsubmit={(e) => { e.preventDefault(); pinSend(); }}>
         <input placeholder="Enter PIN" type="password" bind:value={pin} />
         <button type="submit">Submit PIN</button>
@@ -272,9 +345,31 @@
     padding: 2rem 1.5rem;
   }
 
-  h2 {
-    margin: 0 0 1.5rem;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header h2 {
+    margin: 0;
     font-size: 1.4rem;
+  }
+
+  .settings-btn {
+    background: none !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    color: #666 !important;
+  }
+  .settings-btn:hover {
+    background: #eee !important;
+    color: #333 !important;
   }
 
   h3 {
@@ -283,6 +378,45 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #666;
+  }
+
+  .settings-modal {
+    background: #fff;
+    border: 2px solid #396cd8;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .settings-modal label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+  }
+  .settings-modal input {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+  }
+  .settings-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .secondary {
+    background: #6c757d;
+  }
+  .secondary:hover:not(:disabled) {
+    background: #5a6268;
+  }
+  .danger {
+    background: #dc3545;
+  }
+  .danger:hover:not(:disabled) {
+    background: #c82333;
   }
 
   .actions {
@@ -444,5 +578,20 @@
     }
     h2 { color: #e0e0e0; }
     .console { background: #111; }
+    .settings-btn {
+      border-color: #444;
+      color: #999;
+    }
+    .settings-btn:hover {
+      background: #333;
+      color: #e0e0e0;
+    }
+    .settings-modal {
+      background: #2a2a2a;
+      border-color: #396cd8;
+    }
+    .settings-modal label {
+      color: #aaa;
+    }
   }
 </style>

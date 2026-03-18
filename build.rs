@@ -7,8 +7,7 @@ const COMMANDS: &[&str] = &[
 ];
 
 fn main() {
-  #[cfg(target_os = "macos")]
-  {
+  if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos") {
     use swift_rs::SwiftLinker;
     SwiftLinker::new("13.0")
       .with_package("WebauthnBridge", "macos")
