@@ -1,7 +1,18 @@
-use std::{collections::HashMap, fmt::Debug, vec};
+use std::{collections::HashMap, env};
 
 use chrono::Local;
 use tauri::{async_runtime::Mutex, State, Url};
+
+const DEFAULT_RP_ID: &str = "tauri-plugin-webauthn-example.glitch.me";
+const DEFAULT_RP_ORIGIN: &str = "https://tauri-plugin-webauthn-example.glitch.me/";
+
+fn rp_id() -> String {
+  env::var("WEBAUTHN_RP_ID").unwrap_or_else(|_| DEFAULT_RP_ID.to_string())
+}
+
+fn rp_origin() -> String {
+  env::var("WEBAUTHN_RP_ORIGIN").unwrap_or_else(|_| DEFAULT_RP_ORIGIN.to_string())
+}
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
 use webauthn_rs::{
   prelude::{
@@ -21,7 +32,7 @@ async fn reg_start(
   webauthn: State<'_, Webauthn>,
   users: State<'_, Mutex<HashMap<String, Uuid>>>,
   name: &str,
-) -> Result<PublicKeyCredentialCreationOptions, ()> {
+) -> Result<PublicKeyCredentialCreationOptions, String> {
   let mut users = users.lock().await;
   let uuid = users.entry(name.to_string()).or_insert(Uuid::new_v4());
 
@@ -32,7 +43,7 @@ async fn reg_start(
 
   let (challenge, state_val) = webauthn
     .start_passkey_registration(*uuid, name, name, passkey)
-    .panic_log("Failed to start registration");
+    .map_err(|e| format!("Failed to start registration: {e:?}"))?;
 
   let mut state = state.lock().await;
   state.replace((state_val, *uuid));
@@ -46,15 +57,15 @@ async fn reg_finish(
   passkeys: State<'_, Mutex<HashMap<Uuid, Vec<Passkey>>>>,
   webauthn: State<'_, Webauthn>,
   response: RegisterPublicKeyCredential,
-) -> Result<(), ()> {
+) -> Result<(), String> {
   let mut state = state.lock().await;
   let (passkey_reg, uuid) = state
     .take()
-    .panic_log("Failed to get passkey registration state");
+    .ok_or("No pending registration. Did you call register first?")?;
 
   let passkey = webauthn
     .finish_passkey_registration(&response, &passkey_reg)
-    .panic_log("Failed to finish registration");
+    .map_err(|e| format!("Failed to verify registration: {e:?}"))?;
 
   let mut passkeys = passkeys.lock().await;
   let passkeys = passkeys.entry(uuid).or_default();
@@ -67,10 +78,10 @@ async fn reg_finish(
 async fn auth_start(
   webauthn: State<'_, Webauthn>,
   state: State<'_, Mutex<Option<DiscoverableAuthentication>>>,
-) -> Result<PublicKeyCredentialRequestOptions, ()> {
+) -> Result<PublicKeyCredentialRequestOptions, String> {
   let (challenge, state_val) = webauthn
     .start_discoverable_authentication()
-    .panic_log("Failed to start authentication");
+    .map_err(|e| format!("Failed to start authentication: {e:?}"))?;
 
   let mut state = state.lock().await;
   state.replace(state_val);
@@ -85,16 +96,20 @@ async fn auth_start_non_discoverable(
   state: State<'_, Mutex<Option<PasskeyAuthentication>>>,
   passkeys: State<'_, Mutex<HashMap<Uuid, Vec<Passkey>>>>,
   name: &str,
-) -> Result<PublicKeyCredentialRequestOptions, ()> {
+) -> Result<PublicKeyCredentialRequestOptions, String> {
   let users = users.lock().await;
-  let uuid = users.get(name).panic_log("User not found");
+  let uuid = users
+    .get(name)
+    .ok_or(format!("User \"{name}\" not found. Register first."))?;
 
   let passkeys = passkeys.lock().await;
-  let passkey = passkeys.get(uuid).panic_log("Passkey not found");
+  let passkey = passkeys
+    .get(uuid)
+    .ok_or("No passkey found for this user. Register first.")?;
 
   let (challenge, state_val) = webauthn
     .start_passkey_authentication(passkey)
-    .panic_log("Failed to start authentication");
+    .map_err(|e| format!("Failed to start authentication: {e:?}"))?;
 
   let mut state = state.lock().await;
   state.replace(state_val);
@@ -108,24 +123,24 @@ async fn auth_finish(
   state: State<'_, Mutex<Option<DiscoverableAuthentication>>>,
   passkeys: State<'_, Mutex<HashMap<Uuid, Vec<Passkey>>>>,
   response: PublicKeyCredential,
-) -> Result<(), ()> {
+) -> Result<(), String> {
   let (user, cred_id) = webauthn
     .identify_discoverable_authentication(&response)
-    .panic_log("Failed to identify authentication");
+    .map_err(|e| format!("Failed to identify credential: {e:?}"))?;
 
   let passkeys = passkeys.lock().await;
   let passkey = passkeys
     .get(&user)
     .and_then(|p| p.iter().find(|p| p.cred_id() == cred_id))
-    .panic_log("Passkey not found");
+    .ok_or("Passkey not found. You may need to register again in this session.")?;
 
   let mut state = state.lock().await;
   let passkey_auth = state
     .take()
-    .panic_log("Failed to get passkey authentication state");
+    .ok_or("No pending authentication. Did you call authenticate first?")?;
   webauthn
     .finish_discoverable_authentication(&response, passkey_auth, &[passkey.into()])
-    .panic_log("Failed to finish authentication");
+    .map_err(|e| format!("Failed to verify authentication: {e:?}"))?;
   Ok(())
 }
 
@@ -134,25 +149,36 @@ async fn auth_finish_non_discoverable(
   webauthn: State<'_, Webauthn>,
   state: State<'_, Mutex<Option<PasskeyAuthentication>>>,
   response: PublicKeyCredential,
-) -> Result<(), ()> {
+) -> Result<(), String> {
   let passkey_auth = state
     .lock()
     .await
     .take()
-    .panic_log("Failed to get passkey authentication state");
+    .ok_or("No pending authentication. Did you call authenticate first?")?;
   webauthn
     .finish_passkey_authentication(&response, &passkey_auth)
-    .panic_log("Failed to finish authentication");
+    .map_err(|e| format!("Failed to verify authentication: {e:?}"))?;
   Ok(())
+}
+
+#[tauri::command]
+fn get_rp_origin() -> String {
+  rp_origin()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+  // Load .env from the example root (parent of src-tauri)
+  let _ = dotenvy::from_filename("../.env");
+  let rp_id = rp_id();
+  let rp_origin = rp_origin();
+  log::info!("Using RP ID: {rp_id}, Origin: {rp_origin}");
+
   tauri::Builder::default()
     .manage(
       WebauthnBuilder::new(
-        "tauri-plugin-webauthn-example.glitch.me",
-        &Url::parse("https://tauri-plugin-webauthn-example.glitch.me/").unwrap(),
+        &rp_id,
+        &Url::parse(&rp_origin).expect("Invalid WEBAUTHN_RP_ORIGIN URL"),
       )
       .unwrap()
       .append_allowed_origin(
@@ -186,29 +212,8 @@ pub fn run() {
       auth_finish,
       auth_start_non_discoverable,
       auth_finish_non_discoverable,
+      get_rp_origin,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
-}
-
-trait PanicLog<T> {
-  fn panic_log(self, msg: &str) -> T;
-}
-
-impl<T, E: Debug> PanicLog<T> for Result<T, E> {
-  fn panic_log(self, msg: &str) -> T {
-    if let Err(e) = &self {
-      log::error!("{}: {:?}", msg, e);
-    }
-    self.unwrap()
-  }
-}
-
-impl<T> PanicLog<T> for Option<T> {
-  fn panic_log(self, msg: &str) -> T {
-    if self.is_none() {
-      log::error!("{}", msg);
-    }
-    self.unwrap()
-  }
 }

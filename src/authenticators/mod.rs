@@ -5,15 +5,11 @@ use webauthn_rs_proto::{
   RegisterPublicKeyCredential,
 };
 
-#[cfg(not(any(
-  target_os = "android",
-  target_os = "ios",
-  target_os = "windows",
-  target_os = "macos"
-)))]
+#[cfg(not(any(target_os = "android", target_os = "ios", target_os = "windows",)))]
 pub mod ctap2;
-#[cfg(target_os = "macos")]
-pub mod macos;
+// macos platform authenticator disabled for local CTAP2/YubiKey testing
+// #[cfg(target_os = "macos")]
+// pub mod macos;
 #[cfg(mobile)]
 pub mod mobile;
 #[cfg(all(desktop, windows))]

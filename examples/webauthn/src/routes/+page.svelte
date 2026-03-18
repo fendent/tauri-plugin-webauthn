@@ -25,6 +25,7 @@
   let needsPin = $state(false);
   let busy = $state(false);
   let logEl: HTMLElement | undefined = $state();
+  let rpOrigin = $state('');
 
   function timestamp() {
     return new Date().toLocaleTimeString();
@@ -54,7 +55,7 @@
       log('info', 'Got challenge from server. Waiting for YubiKey...');
       log('action', 'Insert or touch your YubiKey now.');
 
-      let response = await register('https://localhost', options);
+      let response = await register(rpOrigin, options);
       log('info', 'Got response from YubiKey. Verifying...');
 
       await invoke('reg_finish', { response });
@@ -77,7 +78,7 @@
       log('info', 'Got challenge. Waiting for YubiKey...');
       log('action', 'Insert or touch your YubiKey now.');
 
-      let response = await authenticate('https://localhost', options);
+      let response = await authenticate(rpOrigin, options);
       log('info', 'Got response from YubiKey. Verifying...');
 
       await invoke('auth_finish', { response });
@@ -106,7 +107,7 @@
       log('info', 'Got challenge. Waiting for YubiKey...');
       log('action', 'Insert or touch your YubiKey now.');
 
-      let response = await authenticate('https://localhost', options);
+      let response = await authenticate(rpOrigin, options);
       log('info', 'Got response from YubiKey. Verifying...');
 
       await invoke('auth_finish_non_discoverable', { response });
@@ -135,8 +136,9 @@
     }
   };
 
-  onMount(() => {
-    log('info', 'WebAuthn example ready. Using CTAP2 (USB) authenticator.');
+  onMount(async () => {
+    rpOrigin = await invoke('get_rp_origin');
+    log('info', `WebAuthn example ready. RP origin: ${rpOrigin}`);
     registerListener((event) => {
       switch (event.type) {
         case WebauthnEventType.SelectDevice:
