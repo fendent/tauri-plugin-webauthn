@@ -12,9 +12,7 @@ use webauthn_rs_proto::{
   target_os = "macos"
 )))]
 pub mod ctap2;
-#[cfg(all(target_os = "macos", feature = "ctap2"))]
-pub mod ctap2;
-#[cfg(all(target_os = "macos", not(feature = "ctap2")))]
+#[cfg(target_os = "macos")]
 pub mod macos;
 #[cfg(mobile)]
 pub mod mobile;

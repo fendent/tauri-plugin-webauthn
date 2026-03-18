@@ -17,9 +17,7 @@ pub use error::{Error, Result};
   target_os = "macos"
 )))]
 type Webauthn<R> = authenticators::ctap2::Webauthn<R>;
-#[cfg(all(target_os = "macos", feature = "ctap2"))]
-type Webauthn<R> = authenticators::ctap2::Webauthn<R>;
-#[cfg(all(target_os = "macos", not(feature = "ctap2")))]
+#[cfg(target_os = "macos")]
 type Webauthn<R> = authenticators::macos::Webauthn<R>;
 #[cfg(all(desktop, windows))]
 type Webauthn<R> = authenticators::windows::Webauthn<R>;

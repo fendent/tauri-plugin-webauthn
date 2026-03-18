@@ -18,16 +18,10 @@ pub enum Error {
   NoToken,
   #[error("Authenticator error: {0}")]
   Authenticator(String),
-  #[cfg(any(
-    not(any(target_os = "android", target_os = "ios", target_os = "windows", target_os = "macos")),
-    all(target_os = "macos", feature = "ctap2")
-  ))]
+  #[cfg(not(any(target_os = "android", target_os = "ios", target_os = "windows", target_os = "macos")))]
   #[error(transparent)]
   Ctap2(#[from] authenticator::errors::AuthenticatorError),
-  #[cfg(any(
-    not(any(target_os = "android", target_os = "ios", target_os = "windows", target_os = "macos")),
-    all(target_os = "macos", feature = "ctap2")
-  ))]
+  #[cfg(not(any(target_os = "android", target_os = "ios", target_os = "windows", target_os = "macos")))]
   #[error(transparent)]
   Cbor2(#[from] serde_cbor_2::Error),
 }
