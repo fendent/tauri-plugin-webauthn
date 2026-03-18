@@ -40,13 +40,23 @@ swift-rs = { version = "1.0.5", features = ["build"] }
 [features]
 default = ["log"]
 log = ["dep:log"]
+# Use CTAP2 (USB security key) authenticator on macOS instead of the platform authenticator.
+# The platform authenticator requires code signing with associated domains entitlements.
+# CTAP2 works without any signing setup, making it useful for local development.
+ctap2 = ["dep:authenticator", "dep:serde_cbor_2", "dep:openssl"]
 
-[target.'cfg(not(any(target_os = "android", target_os = "ios", target_os = "windows")))'.dependencies]
+[target.'cfg(not(any(target_os = "android", target_os = "ios", target_os = "windows", target_os = "macos")))'.dependencies]
 authenticator = { version = "0.5.0", default-features = false, features = [
   "crypto_openssl",
 ] }
 serde_cbor_2 = "0.13.0"
 openssl = "0.10.72"
+
+# Optional CTAP2 deps for macOS (enabled via the `ctap2` feature)
+[target.'cfg(target_os = "macos")'.dependencies]
+authenticator = { version = "0.5.0", default-features = false, features = ["crypto_openssl"], optional = true }
+serde_cbor_2 = { version = "0.13.0", optional = true }
+openssl = { version = "0.10.72", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 webauthn-authenticator-rs = { version = "0.5.0", features = [
