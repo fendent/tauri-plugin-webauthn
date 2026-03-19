@@ -1,0 +1,61 @@
+{
+  "": {
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/master.swiftdeps"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Channel.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Channel.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Channel.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Channel~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Channel.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Channel.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Invoke.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Invoke.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Invoke.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Invoke~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Invoke.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Invoke.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JSTypes.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JSTypes.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JSTypes.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JSTypes~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JSTypes.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JSTypes.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JsonValue.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JsonValue.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JsonValue.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JsonValue~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JsonValue.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JsonValue.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Logger.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Logger.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Logger.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Logger~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Logger.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Logger.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Plugin/Plugin.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Plugin.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Plugin.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Plugin~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Plugin.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Plugin.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Tauri.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Tauri.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Tauri.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Tauri~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Tauri.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Tauri.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/UiUtils.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/UiUtils.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/UiUtils.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/UiUtils~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/UiUtils.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/UiUtils.dia"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/master.swiftdeps"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/checkouts/swift-rs/src-swift/lib.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/lib.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/lib.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/lib~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/lib.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/lib.dia"
+  }
+}

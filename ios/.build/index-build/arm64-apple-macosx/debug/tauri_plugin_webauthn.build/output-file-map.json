@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/master.swiftdeps"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/PasskeyHandler.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/PasskeyHandler.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/PasskeyHandler.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/PasskeyHandler~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/PasskeyHandler.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/PasskeyHandler.dia"
+  },
+  "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/WebauthnPlugin.swift": {
+    "dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/WebauthnPlugin.d",
+    "object": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/WebauthnPlugin.swift.o",
+    "swiftmodule": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/WebauthnPlugin~partial.swiftmodule",
+    "swift-dependencies": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/WebauthnPlugin.swiftdeps",
+    "diagnostics": "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/WebauthnPlugin.dia"
+  }
+}

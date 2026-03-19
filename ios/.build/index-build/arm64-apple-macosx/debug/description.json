@@ -1,0 +1,706 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.SwiftRs-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/sources",
+      "importPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/checkouts/swift-rs/src-swift/lib.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "SwiftRs",
+      "moduleOutputPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/SwiftRs.swiftmodule",
+      "objects" : [
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/lib.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/include/SwiftRs-Swift.h",
+        "-swift-version",
+        "5",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings"
+      ],
+      "outputFileMapPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/SwiftRs.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/checkouts/swift-rs/src-swift/lib.swift"
+      ],
+      "tempsPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.Tauri-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/sources",
+      "importPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Channel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Invoke.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JSTypes.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JsonValue.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Logger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Plugin/Plugin.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Tauri.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/UiUtils.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/SwiftRs.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Tauri",
+      "moduleOutputPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/Tauri.swiftmodule",
+      "objects" : [
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Channel.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Invoke.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JSTypes.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/JsonValue.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Logger.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Plugin.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/Tauri.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/UiUtils.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/include/Tauri-Swift.h",
+        "-swift-version",
+        "5",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g"
+      ],
+      "outputFileMapPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/Tauri.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Channel.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Invoke.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JSTypes.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JsonValue.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Logger.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Plugin/Plugin.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Tauri.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/UiUtils.swift"
+      ],
+      "tempsPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.tauri-plugin-webauthn-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/sources",
+      "importPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/PasskeyHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/WebauthnPlugin.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/Tauri.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "tauri_plugin_webauthn",
+      "moduleOutputPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/tauri_plugin_webauthn.swiftmodule",
+      "objects" : [
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/PasskeyHandler.swift.o",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/WebauthnPlugin.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/include/tauri-plugin-webauthn-Swift.h",
+        "-swift-version",
+        "5",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ios"
+      ],
+      "outputFileMapPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules/tauri_plugin_webauthn.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/PasskeyHandler.swift",
+        "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/WebauthnPlugin.swift"
+      ],
+      "tempsPath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "SwiftRs" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "SwiftRs",
+      "-c",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/checkouts/swift-rs/src-swift/lib.swift",
+      "-I",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/include/SwiftRs-Swift.h",
+      "-swift-version",
+      "5",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "Tauri" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Tauri",
+      "-c",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Channel.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Invoke.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JSTypes.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JsonValue.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Logger.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Plugin/Plugin.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Tauri.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/UiUtils.swift",
+      "-I",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/include/Tauri-Swift.h",
+      "-swift-version",
+      "5",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "tauri_plugin_webauthn" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "tauri_plugin_webauthn",
+      "-package-name",
+      "ios",
+      "-c",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/PasskeyHandler.swift",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/WebauthnPlugin.swift",
+      "-I",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/include/tauri-plugin-webauthn-Swift.h",
+      "-swift-version",
+      "5",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "ios",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "SwiftRs" : [
+
+    ],
+    "Tauri" : [
+      "SwiftRs"
+    ],
+    "tauri_plugin_webauthn" : [
+      "Tauri",
+      "SwiftRs"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/checkouts/swift-rs/src-swift/lib.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/SwiftRs.build/sources"
+    },
+    "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Channel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Invoke.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JSTypes.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/JsonValue.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Logger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Plugin/Plugin.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/Tauri.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/.tauri/tauri-api/Sources/Tauri/UiUtils.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/sources"
+    },
+    "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    },
+    "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/PasskeyHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/Sources/WebauthnPlugin/WebauthnPlugin.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/tauri_plugin_webauthn.build/sources"
+    }
+  }
+}

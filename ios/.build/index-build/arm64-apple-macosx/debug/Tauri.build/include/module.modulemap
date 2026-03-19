@@ -1,0 +1,3 @@
+module Tauri {
+    header "/Users/don/src/dkackman/tauri-plugin-webauthn/ios/.build/index-build/arm64-apple-macosx/debug/Tauri.build/include/Tauri-Swift.h"
+}
