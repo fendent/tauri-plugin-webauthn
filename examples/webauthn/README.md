@@ -25,9 +25,6 @@ The example app reads its Relying Party (RP) configuration from environment vari
 | --- | --- | --- |
 | `WEBAUTHN_RP_ID` | The RP domain identity | `tauri-plugin-webauthn-example.glitch.me` |
 | `WEBAUTHN_RP_ORIGIN` | The RP origin URL | `https://tauri-plugin-webauthn-example.glitch.me/` |
-| `WEBAUTHN_ANDROID_APK_KEY_HASH` | Base64url-encoded SHA-256 of the APK signing certificate | _(none)_ |
-
-The `WEBAUTHN_ANDROID_APK_KEY_HASH` is required for Android. It allows the WebAuthn server to accept assertions from `android:apk-key-hash:<hash>` as a valid origin. To get your hash, run `./gradlew signingReport` in the Android project directory (`src-tauri/gen/android/`) and base64url-encode the SHA-256 fingerprint (replace `+` with `-`, `/` with `_`, and remove `=` padding).
 
 Copy `.env.example` to `.env` and edit as needed.
 
