@@ -7,6 +7,7 @@ import UIKit
 final class PasskeyHandler: NSObject {
     private var registrationContinuation: CheckedContinuation<ASAuthorization, Error>?
     private var assertionContinuation: CheckedContinuation<ASAuthorization, Error>?
+    private var activeController: ASAuthorizationController?
 
     func register(
         domain: String, challenge: Data, username: String, userID: Data
@@ -35,6 +36,7 @@ final class PasskeyHandler: NSObject {
 
         return try await withCheckedThrowingContinuation { continuation in
             self.registrationContinuation = continuation
+            self.activeController = controller
             controller.performRequests()
         }
     }
@@ -66,6 +68,7 @@ final class PasskeyHandler: NSObject {
 
         return try await withCheckedThrowingContinuation { continuation in
             self.assertionContinuation = continuation
+            self.activeController = controller
             controller.performRequests()
         }
     }
@@ -87,6 +90,7 @@ extension PasskeyHandler: ASAuthorizationControllerDelegate, ASAuthorizationCont
     func authorizationController(
         controller: ASAuthorizationController, didCompleteWithAuthorization auth: ASAuthorization
     ) {
+        activeController = nil
         if auth.credential is ASAuthorizationPlatformPublicKeyCredentialRegistration
             || auth.credential is ASAuthorizationSecurityKeyPublicKeyCredentialRegistration {
             registrationContinuation?.resume(returning: auth)
@@ -99,6 +103,7 @@ extension PasskeyHandler: ASAuthorizationControllerDelegate, ASAuthorizationCont
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        activeController = nil
         registrationContinuation?.resume(throwing: error)
         registrationContinuation = nil
         assertionContinuation?.resume(throwing: error)
