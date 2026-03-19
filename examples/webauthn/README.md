@@ -1,13 +1,13 @@
 # WebAuthn Example App
 
-A Tauri + SvelteKit example demonstrating the `tauri-plugin-webauthn` plugin with the macOS platform authenticator (passkeys/Touch ID/security keys via system UI).
+A Tauri + SvelteKit example demonstrating the `tauri-plugin-webauthn` plugin across macOS, iOS, and Android.
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/)
 - [Rust](https://www.rust-lang.org/tools/install)
 - [Tauri CLI](https://v2.tauri.app/start/prerequisites/)
-- An Apple Developer account
+- An Apple Developer account (for macOS and iOS)
 - A domain you control (for Associated Domains)
 
 From the **repository root**, install dependencies and build the JS bindings:
@@ -21,70 +21,151 @@ pnpm build
 
 The example app reads its Relying Party (RP) configuration from environment variables in `.env`:
 
-| Variable             | Description            | Default                                            |
-| -------------------- | ---------------------- | -------------------------------------------------- |
-| `WEBAUTHN_RP_ID`     | The RP domain identity | `tauri-plugin-webauthn-example.glitch.me`          |
-| `WEBAUTHN_RP_ORIGIN` | The RP origin URL      | `https://tauri-plugin-webauthn-example.glitch.me/` |
+| Variable | Description | Default |
+| --- | --- | --- |
+| `WEBAUTHN_RP_ID` | The RP domain identity | `tauri-plugin-webauthn-example.glitch.me` |
+| `WEBAUTHN_RP_ORIGIN` | The RP origin URL | `https://tauri-plugin-webauthn-example.glitch.me/` |
+| `WEBAUTHN_ANDROID_APK_KEY_HASH` | Base64url-encoded SHA-256 of the APK signing certificate | _(none)_ |
+
+The `WEBAUTHN_ANDROID_APK_KEY_HASH` is required for Android. It allows the WebAuthn server to accept assertions from `android:apk-key-hash:<hash>` as a valid origin. To get your hash, run `./gradlew signingReport` in the Android project directory (`src-tauri/gen/android/`) and base64url-encode the SHA-256 fingerprint (replace `+` with `-`, `/` with `_`, and remove `=` padding).
 
 Copy `.env.example` to `.env` and edit as needed.
 
-## Setup
+## Platform Setup
 
-The macOS platform authenticator uses `ASAuthorizationController` to present the native passkey/security key UI (Touch ID, iCloud Keychain, or USB keys via the system prompt). It requires code signing with entitlements and an Associated Domains setup.
+Each platform requires Associated Domains configuration and code signing. See the platform-specific READMEs for detailed setup instructions:
 
-### 1. Domain setup
+- [**macOS**](../../macos/README.md) — entitlements, provisioning profiles, notarization, and LaunchServices registration
+- [**iOS**](../../ios/README.md) — entitlements, development team, physical device requirements
 
-Your RP domain must serve an `apple-app-site-association` file at `https://<your-domain>/.well-known/apple-app-site-association`:
+Both platforms require:
 
-```json
-{
-  "webcredentials": {
-    "apps": ["<TEAM_ID>.<BUNDLE_ID>"]
-  }
-}
-```
+1. An App ID with **Associated Domains** enabled in the Apple Developer portal
+2. An AASA file hosted at `https://<your-domain>/.well-known/apple-app-site-association`
+3. The `webcredentials:<your-domain>` entitlement in the app
 
-A Cloudflare Worker is an easy way to serve this.
+## Relying Party Domain with Cloudflare Workers
 
-### 2. Apple Developer Portal
+A [Cloudflare Worker](https://developers.cloudflare.com/workers/) is a simple way to serve the required well-known association files for Apple and Android. The worker handles three paths:
 
-1. Register an **App ID** at the [Apple Developer Portal](https://developer.apple.com/account/resources/identifiers/list)
-   - Bundle ID (Explicit): your bundle ID (e.g., `net.kackman.webauthn.example`)
-   - Enable the **Associated Domains** capability
-2. Create a **macOS App Development** provisioning profile at the [Profiles page](https://developer.apple.com/account/resources/profiles/list)
-   - Select your App ID, development certificate, and Mac device
-   - Download the `.mobileprovision` file
-3. Place the profile at `examples/webauthn/embedded.provisionprofile`
+- `/.well-known/apple-app-site-association` — Apple Associated Domains for passkeys (macOS and iOS)
+- `/.well-known/apple-app-site-data` — alternate path some Apple services check
+- `/.well-known/assetlinks.json` — Android Digital Asset Links for passkey association
 
-### 3. Enable Associated Domains developer mode
+### 1. Install Wrangler
 
 ```bash
-sudo swcutil developer-mode -e true
+npm install -g wrangler
+wrangler login
 ```
 
-### 4. Entitlements
+### 2. Create the worker
 
-The `src-tauri/Entitlements.plist` file links the app to your RP domain via Associated Domains. Update the domain if you use a different RP:
-
-```xml
-<key>com.apple.developer.associated-domains</key>
-<array>
-    <string>webcredentials:your-domain.com?mode=developer</string>
-</array>
+```bash
+mkdir webauthn-rp && cd webauthn-rp
+wrangler init
 ```
 
-The `?mode=developer` suffix bypasses Apple's CDN cache and fetches the association file directly from your server during development.
+### 3. Add the worker code
 
-### 5. Configure `.env`
+Replace the contents of `src/index.js` (or `src/index.ts`) with:
+
+```javascript
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+
+    // Apple Associated Domains — used by macOS and iOS for passkey trust
+    if (url.pathname === '/.well-known/apple-app-site-association' ||
+        url.pathname === '/.well-known/apple-app-site-data') {
+      return new Response(JSON.stringify({
+        webcredentials: {
+          apps: ["TEAM_ID.com.example.myapp"]
+        }
+      }), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
+    // Android Digital Asset Links — used by Android for passkey association
+    else if (url.pathname === '/.well-known/assetlinks.json') {
+      return new Response(JSON.stringify([{
+        relation: [
+          "delegate_permission/common.handle_all_urls",
+          "delegate_permission/common.get_login_creds"
+        ],
+        target: {
+          namespace: "android_app",
+          package_name: "com.example.myapp",
+          sha256_cert_fingerprints: [
+            "YOUR_SHA256_FINGERPRINT"
+          ]
+        }
+      }]), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
+    return new Response('WebAuthn RP', { status: 200 });
+  }
+};
+```
+
+Replace the placeholder values:
+
+| Placeholder | Value | How to find it |
+| --- | --- | --- |
+| `TEAM_ID` | Your Apple Developer Team ID | [Apple Developer > Membership](https://developer.apple.com/help/account/manage-your-team/locate-your-team-id/) |
+| `com.example.myapp` | Your app's bundle identifier | `identifier` in `tauri.conf.json` |
+| `YOUR_SHA256_FINGERPRINT` | Your Android signing certificate fingerprint | `./gradlew signingReport` in the Android project |
+
+The `apps` array entry must be `TEAM_ID.BUNDLE_ID` with a dot separator (not a slash).
+
+### 4. Deploy
+
+```bash
+wrangler deploy
+```
+
+### 5. Add a custom domain
+
+In the [Cloudflare dashboard](https://dash.cloudflare.com/):
+
+1. Go to **Workers & Pages** > your worker > **Settings** > **Domains & Routes**
+2. Add your custom domain (e.g., `webauthn.example.com`)
+3. Cloudflare handles TLS automatically
+
+### 6. Verify
+
+```bash
+# Apple association
+curl https://your-domain.com/.well-known/apple-app-site-association
+
+# Check Apple's CDN cache (may take minutes to hours to propagate)
+curl https://app-site-association.cdn-apple.com/a/v1/your-domain.com
+
+# Android association
+curl https://your-domain.com/.well-known/assetlinks.json
+```
+
+### Configure `.env`
 
 ```env
 WEBAUTHN_RP_ID=your-domain.com
 WEBAUTHN_RP_ORIGIN=https://your-domain.com
 ```
 
-### 6. Build and run
+## Running
 
-The `build-macos-dev.sh` script builds a `.app` bundle, embeds the provisioning profile, and signs it with your Apple Development identity:
+### macOS
+
+The `build-macos-dev.sh` script builds a `.app` bundle, embeds the provisioning profile, and signs it with your Apple Development identity. Place your provisioning profile at `examples/webauthn/embedded.provisionprofile` before running.
 
 ```bash
 cd examples/webauthn
@@ -99,11 +180,30 @@ WEBAUTHN_RP_ID=your-domain.com WEBAUTHN_RP_ORIGIN=https://your-domain.com ../../
 
 Note: using `open webauthn.app` will not pass environment variables from your shell. Run the binary directly instead.
 
+For macOS development, you also need to enable Associated Domains developer mode:
+
+```bash
+sudo swcutil developer-mode -e true
+```
+
+### iOS
+
+Requires a physical device — the iOS Simulator does not support passkeys.
+
+```bash
+pnpm tauri ios dev
+```
+
+Or open in Xcode for more control over signing and debugging:
+
+```bash
+pnpm tauri ios dev --open
+```
+
 ## Notes
 
 - **Credentials are stored in memory** and will be lost when the app restarts. This is expected for an example app.
 - The in-app console shows color-coded log entries for registration/authentication flow, errors, and prompts.
-- The plugin uses `ASAuthorizationController` which presents both passkey (Touch ID/iCloud Keychain) and security key options in the native system UI.
 
 ## Recommended IDE Setup
 
