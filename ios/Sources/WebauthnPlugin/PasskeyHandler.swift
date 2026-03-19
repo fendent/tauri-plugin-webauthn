@@ -72,6 +72,14 @@ final class PasskeyHandler: NSObject {
             controller.performRequests()
         }
     }
+
+    func cancel() {
+        activeController = nil
+        registrationContinuation?.resume(throwing: CancellationError())
+        registrationContinuation = nil
+        assertionContinuation?.resume(throwing: CancellationError())
+        assertionContinuation = nil
+    }
 }
 
 // MARK: - ASAuthorizationControllerDelegate
