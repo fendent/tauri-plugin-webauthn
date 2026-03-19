@@ -23,11 +23,14 @@ struct RpConfig {
 
 fn build_webauthn(rp_id: &str, rp_origin: &str) -> Result<Webauthn, String> {
   let url = Url::parse(rp_origin).map_err(|e| format!("Invalid RP origin URL: {e}"))?;
-  let builder = WebauthnBuilder::new(rp_id, &url)
-    .map_err(|e| format!("Failed to create WebauthnBuilder: {e}"))?
-    .append_allowed_origin(
-      &Url::parse("android:apk-key-hash:ACDefg1Oe_Oghhc1udjQbgeC9Za9h_fyf9vjJaBx-VI").unwrap(),
+  let mut builder = WebauthnBuilder::new(rp_id, &url)
+    .map_err(|e| format!("Failed to create WebauthnBuilder: {e}"))?;
+  if let Ok(hash) = env::var("WEBAUTHN_ANDROID_APK_KEY_HASH") {
+    let android_origin = format!("android:apk-key-hash:{hash}");
+    builder = builder.append_allowed_origin(
+      &Url::parse(&android_origin).map_err(|e| format!("Invalid Android APK key hash URL: {e}"))?,
     );
+  }
   builder
     .build()
     .map_err(|e| format!("Failed to build Webauthn: {e}"))
