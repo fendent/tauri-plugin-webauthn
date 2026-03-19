@@ -1,8 +1,36 @@
-use std::{collections::HashMap, env};
+use std::{collections::HashMap, env, fmt::Debug};
 
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use tauri::{async_runtime::Mutex, State, Url};
+
+/// Logs an error and converts it to a String for returning to the frontend.
+trait LogErr<T> {
+  fn log_err(self, msg: &str) -> Result<T, String>;
+}
+
+impl<T, E: Debug> LogErr<T> for Result<T, E> {
+  fn log_err(self, msg: &str) -> Result<T, String> {
+    self.map_err(|e| {
+      let err = format!("{msg}: {e:?}");
+      log::error!("{err}");
+      err
+    })
+  }
+}
+
+trait LogNone<T> {
+  fn log_none(self, msg: &str) -> Result<T, String>;
+}
+
+impl<T> LogNone<T> for Option<T> {
+  fn log_none(self, msg: &str) -> Result<T, String> {
+    self.ok_or_else(|| {
+      log::error!("{msg}");
+      msg.to_string()
+    })
+  }
+}
 
 const DEFAULT_RP_ID: &str = "tauri-plugin-webauthn-example.glitch.me";
 const DEFAULT_RP_ORIGIN: &str = "https://tauri-plugin-webauthn-example.glitch.me/";
@@ -22,18 +50,18 @@ struct RpConfig {
 }
 
 fn build_webauthn(rp_id: &str, rp_origin: &str) -> Result<Webauthn, String> {
-  let url = Url::parse(rp_origin).map_err(|e| format!("Invalid RP origin URL: {e}"))?;
+  let url = Url::parse(rp_origin).log_err("Invalid RP origin URL")?;
   let mut builder = WebauthnBuilder::new(rp_id, &url)
-    .map_err(|e| format!("Failed to create WebauthnBuilder: {e}"))?;
+    .log_err("Failed to create WebauthnBuilder")?;
   if let Ok(hash) = env::var("WEBAUTHN_ANDROID_APK_KEY_HASH") {
     let android_origin = format!("android:apk-key-hash:{hash}");
     builder = builder.append_allowed_origin(
-      &Url::parse(&android_origin).map_err(|e| format!("Invalid Android APK key hash URL: {e}"))?,
+      &Url::parse(&android_origin).log_err("Invalid Android APK key hash URL")?,
     );
   }
   builder
     .build()
-    .map_err(|e| format!("Failed to build Webauthn: {e}"))
+    .log_err("Failed to build Webauthn")
 }
 
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
@@ -67,7 +95,7 @@ async fn reg_start(
   let webauthn = webauthn.lock().await;
   let (challenge, state_val) = webauthn
     .start_passkey_registration(*uuid, name, name, passkey)
-    .map_err(|e| format!("Failed to start registration: {e:?}"))?;
+    .log_err("Failed to start registration")?;
 
   let mut state = state.lock().await;
   state.replace((state_val, *uuid));
@@ -85,12 +113,12 @@ async fn reg_finish(
   let mut state = state.lock().await;
   let (passkey_reg, uuid) = state
     .take()
-    .ok_or("No pending registration. Did you call register first?")?;
+    .log_none("No pending registration. Did you call register first?")?;
 
   let webauthn = webauthn.lock().await;
   let passkey = webauthn
     .finish_passkey_registration(&response, &passkey_reg)
-    .map_err(|e| format!("Failed to verify registration: {e:?}"))?;
+    .log_err("Failed to verify registration")?;
 
   let mut passkeys = passkeys.lock().await;
   let passkeys = passkeys.entry(uuid).or_default();
@@ -107,7 +135,7 @@ async fn auth_start(
   let webauthn = webauthn.lock().await;
   let (challenge, state_val) = webauthn
     .start_discoverable_authentication()
-    .map_err(|e| format!("Failed to start authentication: {e:?}"))?;
+    .log_err("Failed to start authentication")?;
 
   let mut state = state.lock().await;
   state.replace(state_val);
@@ -126,17 +154,17 @@ async fn auth_start_non_discoverable(
   let users = users.lock().await;
   let uuid = users
     .get(name)
-    .ok_or(format!("User \"{name}\" not found. Register first."))?;
+    .log_none(&format!("User \"{name}\" not found. Register first."))?;
 
   let passkeys = passkeys.lock().await;
   let passkey = passkeys
     .get(uuid)
-    .ok_or("No passkey found for this user. Register first.")?;
+    .log_none("No passkey found for this user. Register first.")?;
 
   let webauthn = webauthn.lock().await;
   let (challenge, state_val) = webauthn
     .start_passkey_authentication(passkey)
-    .map_err(|e| format!("Failed to start authentication: {e:?}"))?;
+    .log_err("Failed to start authentication")?;
 
   let mut state = state.lock().await;
   state.replace(state_val);
@@ -154,21 +182,21 @@ async fn auth_finish(
   let webauthn = webauthn.lock().await;
   let (user, cred_id) = webauthn
     .identify_discoverable_authentication(&response)
-    .map_err(|e| format!("Failed to identify credential: {e:?}"))?;
+    .log_err("Failed to identify credential")?;
 
   let passkeys = passkeys.lock().await;
   let passkey = passkeys
     .get(&user)
     .and_then(|p| p.iter().find(|p| p.cred_id() == cred_id))
-    .ok_or("Passkey not found. You may need to register again in this session.")?;
+    .log_none("Passkey not found. You may need to register again in this session.")?;
 
   let mut state = state.lock().await;
   let passkey_auth = state
     .take()
-    .ok_or("No pending authentication. Did you call authenticate first?")?;
+    .log_none("No pending authentication. Did you call authenticate first?")?;
   webauthn
     .finish_discoverable_authentication(&response, passkey_auth, &[passkey.into()])
-    .map_err(|e| format!("Failed to verify authentication: {e:?}"))?;
+    .log_err("Failed to verify authentication")?;
   Ok(())
 }
 
@@ -182,11 +210,11 @@ async fn auth_finish_non_discoverable(
     .lock()
     .await
     .take()
-    .ok_or("No pending authentication. Did you call authenticate first?")?;
+    .log_none("No pending authentication. Did you call authenticate first?")?;
   let webauthn = webauthn.lock().await;
   webauthn
     .finish_passkey_authentication(&response, &passkey_auth)
-    .map_err(|e| format!("Failed to verify authentication: {e:?}"))?;
+    .log_err("Failed to verify authentication")?;
   Ok(())
 }
 
