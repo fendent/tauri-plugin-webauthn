@@ -158,6 +158,36 @@ WEBAUTHN_RP_ID=your-domain.com
 WEBAUTHN_RP_ORIGIN=https://your-domain.com
 ```
 
+## Customizing for Your Developer Account
+
+The example ships with one developer's identifiers. Before building, update these two files with your own values:
+
+### `src-tauri/tauri.conf.json`
+
+| Field | Example | Description |
+| --- | --- | --- |
+| `identifier` | `com.example.myapp` | Your app's bundle identifier, registered in the Apple Developer portal with Associated Domains enabled |
+
+### `src-tauri/Entitlements.plist`
+
+| Key | Example | Description |
+| --- | --- | --- |
+| `com.apple.application-identifier` | `ABCDE12345.com.example.myapp` | `TEAM_ID.BUNDLE_ID` — must match your Team ID and the identifier above |
+| `com.apple.developer.team-identifier` | `ABCDE12345` | Your Apple Developer Team ID ([how to find it](https://developer.apple.com/help/account/manage-your-team/locate-your-team-id/)) |
+| `com.apple.developer.associated-domains` | `webcredentials:your-domain.com?mode=developer` | Your RP domain, matching the domain hosting your AASA file |
+
+### Regenerate platform files
+
+After changing the identifier, regenerate the platform-specific project files:
+
+```bash
+cd examples/webauthn
+pnpm tauri ios init
+pnpm tauri android init
+```
+
+The build script (`build-macos-dev.sh`) reads these config files automatically — no additional edits needed there.
+
 ## Running
 
 ### macOS
