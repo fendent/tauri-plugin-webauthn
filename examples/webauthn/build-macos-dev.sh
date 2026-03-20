@@ -2,12 +2,12 @@
 # Build and sign macOS app for WebAuthn platform authenticator development
 #
 # PREREQUISITES:
-# 1. Register App ID "net.kackman.webauthn.example" with Associated Domains
+# 1. Register App ID (identifier from src-tauri/tauri.conf.json) with Associated Domains
 #    at https://developer.apple.com/account/resources/identifiers/list
 # 2. Create a Mac Development provisioning profile at:
 #    https://developer.apple.com/account/resources/profiles/list
 # 3. Place the downloaded profile as: examples/webauthn/embedded.provisionprofile
-# 4. Deploy apple-app-site-data on webauthn.dkackman.com
+# 4. Deploy apple-app-site-data on the associated domain (see Entitlements.plist)
 #
 # Run this script from the examples/webauthn directory.
 
@@ -16,12 +16,15 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Configuration
-TEAM_ID="86TDY6D9V2"
-BUNDLE_ID="net.kackman.webauthn.example"
-APP_NAME="webauthn"
+# Configuration - derived from config files
 ENTITLEMENTS="src-tauri/Entitlements.plist"
 PROVISIONING_PROFILE="embedded.provisionprofile"
+TAURI_CONF="src-tauri/tauri.conf.json"
+
+# Pull values from their source-of-truth config files
+BUNDLE_ID=$(jq -r '.identifier' "$TAURI_CONF")
+APP_NAME=$(jq -r '.productName' "$TAURI_CONF")
+TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :com.apple.developer.team-identifier" "$ENTITLEMENTS")
 
 # Check for provisioning profile
 if [ ! -f "$PROVISIONING_PROFILE" ]; then
