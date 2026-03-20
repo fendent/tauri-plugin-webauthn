@@ -175,11 +175,15 @@ fn json_str(v: &serde_json::Value, key: &str) -> crate::Result<String> {
   v[key]
     .as_str()
     .map(|s| s.to_string())
-    .ok_or(crate::Error::Authenticator(format!("Missing JSON field: {key}")))
+    .ok_or(crate::Error::Authenticator(format!(
+      "Missing JSON field: {key}"
+    )))
 }
 
 fn json_bytes(v: &serde_json::Value, key: &str) -> crate::Result<Vec<u8>> {
-  base64_url_decode(v[key].as_str().ok_or(crate::Error::Authenticator(format!("Missing JSON field: {key}")))?)
+  base64_url_decode(v[key].as_str().ok_or(crate::Error::Authenticator(format!(
+    "Missing JSON field: {key}"
+  )))?)
 }
 
 fn parse_registration_response(json: &str) -> crate::Result<RegisterPublicKeyCredential> {

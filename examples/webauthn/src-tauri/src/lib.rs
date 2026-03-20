@@ -51,17 +51,14 @@ struct RpConfig {
 
 fn build_webauthn(rp_id: &str, rp_origin: &str) -> Result<Webauthn, String> {
   let url = Url::parse(rp_origin).log_err("Invalid RP origin URL")?;
-  let mut builder = WebauthnBuilder::new(rp_id, &url)
-    .log_err("Failed to create WebauthnBuilder")?;
-  if let Ok(hash) = env::var("WEBAUTHN_ANDROID_APK_KEY_HASH") {
-    let android_origin = format!("android:apk-key-hash:{hash}");
-    builder = builder.append_allowed_origin(
-      &Url::parse(&android_origin).log_err("Invalid Android APK key hash URL")?,
-    );
-  }
-  builder
-    .build()
-    .log_err("Failed to build Webauthn")
+  let mut builder =
+    WebauthnBuilder::new(rp_id, &url).log_err("Failed to create WebauthnBuilder")?;
+  let android_origin = format!("android:apk-key-hash:W8LAR3CdJ3CAVCTuv3_J5fF2iKYGYQhYfKq9ANbOzjI");
+  builder = builder.append_allowed_origin(
+    &Url::parse(&android_origin).log_err("Invalid Android APK key hash URL")?,
+  );
+
+  builder.build().log_err("Failed to build Webauthn")
 }
 
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
@@ -250,10 +247,7 @@ pub fn run() {
 
   tauri::Builder::default()
     .manage(Mutex::new(webauthn))
-    .manage(Mutex::new(RpConfig {
-      rp_id,
-      rp_origin,
-    }))
+    .manage(Mutex::new(RpConfig { rp_id, rp_origin }))
     .manage(Mutex::new(Option::<DiscoverableAuthentication>::None))
     .manage(Mutex::new(Option::<PasskeyAuthentication>::None))
     .manage(Mutex::new(Option::<(PasskeyRegistration, Uuid)>::None))
