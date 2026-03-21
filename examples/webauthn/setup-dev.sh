@@ -40,8 +40,8 @@ if [ -z "$TEAM_ID" ]; then
     exit 1
 fi
 
-read -rp "Bundle identifier (e.g., com.example.webauthn) [net.kackman.webauthn.example]: " BUNDLE_ID
-BUNDLE_ID="${BUNDLE_ID:-net.kackman.webauthn.example}"
+read -rp "Bundle identifier (e.g., com.example.webauthn) [de.webauthn.test]: " BUNDLE_ID
+BUNDLE_ID="${BUNDLE_ID:-de.webauthn.test}"
 
 read -rp "Associated domain for passkeys (e.g., webauthn.example.com): " DOMAIN
 if [ -z "$DOMAIN" ]; then
