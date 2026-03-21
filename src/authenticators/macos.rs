@@ -159,11 +159,11 @@ fn await_swift_result(
 ) -> crate::Result<String> {
   receiver
     .recv_timeout(Duration::from_millis(timeout as u64))
-    .map_err(|_| crate::Error::Authenticator)?
+    .map_err(|e| crate::Error::Authenticator(format!("Timeout waiting for authenticator: {e}")))?
     .map_err(|e| {
       #[cfg(feature = "log")]
       log::error!("Failed to complete passkey operation: {e}");
-      crate::Error::Authenticator
+      crate::Error::Authenticator(e)
     })
 }
 
@@ -175,11 +175,15 @@ fn json_str(v: &serde_json::Value, key: &str) -> crate::Result<String> {
   v[key]
     .as_str()
     .map(|s| s.to_string())
-    .ok_or(crate::Error::Authenticator)
+    .ok_or(crate::Error::Authenticator(format!(
+      "Missing JSON field: {key}"
+    )))
 }
 
 fn json_bytes(v: &serde_json::Value, key: &str) -> crate::Result<Vec<u8>> {
-  base64_url_decode(v[key].as_str().ok_or(crate::Error::Authenticator)?)
+  base64_url_decode(v[key].as_str().ok_or(crate::Error::Authenticator(format!(
+    "Missing JSON field: {key}"
+  )))?)
 }
 
 fn parse_registration_response(json: &str) -> crate::Result<RegisterPublicKeyCredential> {
