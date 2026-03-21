@@ -238,10 +238,8 @@ async fn set_rp_config(
   rp_origin: String,
 ) -> Result<(), String> {
   let new_webauthn = build_webauthn(&rp_id, &rp_origin)?;
-  let mut wn = webauthn.lock().await;
-  *wn = new_webauthn;
-  let mut cfg = config.lock().await;
-  *cfg = RpConfig { rp_id, rp_origin };
+  *webauthn.lock().await = new_webauthn;
+  *config.lock().await = RpConfig { rp_id, rp_origin };
   Ok(())
 }
 
