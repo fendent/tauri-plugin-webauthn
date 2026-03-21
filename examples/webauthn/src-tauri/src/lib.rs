@@ -81,21 +81,21 @@ async fn reg_start(
   users: State<'_, Mutex<HashMap<String, Uuid>>>,
   name: &str,
 ) -> Result<PublicKeyCredentialCreationOptions, String> {
-  let mut users = users.lock().await;
-  let uuid = users.entry(name.to_string()).or_insert(Uuid::new_v4());
+  let uuid = *users.lock().await.entry(name.to_string()).or_insert(Uuid::new_v4());
 
-  let passkeys = passkeys.lock().await;
-  let passkey = passkeys
-    .get(uuid)
+  let existing_creds = passkeys
+    .lock()
+    .await
+    .get(&uuid)
     .map(|p| p.iter().map(|p| p.cred_id().clone()).collect());
 
-  let webauthn = webauthn.lock().await;
   let (challenge, state_val) = webauthn
-    .start_passkey_registration(*uuid, name, name, passkey)
+    .lock()
+    .await
+    .start_passkey_registration(uuid, name, name, existing_creds)
     .log_err("Failed to start registration")?;
 
-  let mut state = state.lock().await;
-  state.replace((state_val, *uuid));
+  state.lock().await.replace((state_val, uuid));
 
   Ok(challenge.public_key)
 }
@@ -107,19 +107,19 @@ async fn reg_finish(
   webauthn: State<'_, Mutex<Webauthn>>,
   response: RegisterPublicKeyCredential,
 ) -> Result<(), String> {
-  let mut state = state.lock().await;
   let (passkey_reg, uuid) = state
+    .lock()
+    .await
     .take()
     .log_none("No pending registration. Did you call register first?")?;
 
-  let webauthn = webauthn.lock().await;
   let passkey = webauthn
+    .lock()
+    .await
     .finish_passkey_registration(&response, &passkey_reg)
     .log_err("Failed to verify registration")?;
 
-  let mut passkeys = passkeys.lock().await;
-  let passkeys = passkeys.entry(uuid).or_default();
-  passkeys.push(passkey);
+  passkeys.lock().await.entry(uuid).or_default().push(passkey);
 
   Ok(())
 }
@@ -129,13 +129,13 @@ async fn auth_start(
   webauthn: State<'_, Mutex<Webauthn>>,
   state: State<'_, Mutex<Option<DiscoverableAuthentication>>>,
 ) -> Result<PublicKeyCredentialRequestOptions, String> {
-  let webauthn = webauthn.lock().await;
   let (challenge, state_val) = webauthn
+    .lock()
+    .await
     .start_discoverable_authentication()
     .log_err("Failed to start authentication")?;
 
-  let mut state = state.lock().await;
-  state.replace(state_val);
+  state.lock().await.replace(state_val);
 
   Ok(challenge.public_key)
 }
@@ -148,23 +148,26 @@ async fn auth_start_non_discoverable(
   passkeys: State<'_, Mutex<HashMap<Uuid, Vec<Passkey>>>>,
   name: &str,
 ) -> Result<PublicKeyCredentialRequestOptions, String> {
-  let users = users.lock().await;
-  let uuid = users
+  let uuid = *users
+    .lock()
+    .await
     .get(name)
     .log_none(&format!("User \"{name}\" not found. Register first."))?;
 
-  let passkeys = passkeys.lock().await;
-  let passkey = passkeys
-    .get(uuid)
-    .log_none("No passkey found for this user. Register first.")?;
+  let user_passkeys = passkeys
+    .lock()
+    .await
+    .get(&uuid)
+    .log_none("No passkey found for this user. Register first.")?
+    .clone();
 
-  let webauthn = webauthn.lock().await;
   let (challenge, state_val) = webauthn
-    .start_passkey_authentication(passkey)
+    .lock()
+    .await
+    .start_passkey_authentication(&user_passkeys)
     .log_err("Failed to start authentication")?;
 
-  let mut state = state.lock().await;
-  state.replace(state_val);
+  state.lock().await.replace(state_val);
 
   Ok(challenge.public_key)
 }
@@ -176,23 +179,30 @@ async fn auth_finish(
   passkeys: State<'_, Mutex<HashMap<Uuid, Vec<Passkey>>>>,
   response: PublicKeyCredential,
 ) -> Result<(), String> {
-  let webauthn = webauthn.lock().await;
   let (user, cred_id) = webauthn
+    .lock()
+    .await
     .identify_discoverable_authentication(&response)
     .log_err("Failed to identify credential")?;
 
-  let passkeys = passkeys.lock().await;
   let passkey = passkeys
+    .lock()
+    .await
     .get(&user)
     .and_then(|p| p.iter().find(|p| p.cred_id() == cred_id))
-    .log_none("Passkey not found. You may need to register again in this session.")?;
+    .log_none("Passkey not found. You may need to register again in this session.")?
+    .clone();
 
-  let mut state = state.lock().await;
   let passkey_auth = state
+    .lock()
+    .await
     .take()
     .log_none("No pending authentication. Did you call authenticate first?")?;
+
   webauthn
-    .finish_discoverable_authentication(&response, passkey_auth, &[passkey.into()])
+    .lock()
+    .await
+    .finish_discoverable_authentication(&response, passkey_auth, &[(&passkey).into()])
     .log_err("Failed to verify authentication")?;
   Ok(())
 }
