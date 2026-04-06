@@ -1,5 +1,12 @@
 import Foundation
 import AuthenticationServices
+import CryptoKit
+
+// MARK: - Active handler storage
+
+// Module-level storage for the active handler, accessed on the main actor.
+@MainActor
+private var activePasskeyHandler: PasskeyHandler?
 
 // MARK: - C-callable FFI exports
 
@@ -19,6 +26,7 @@ public func webauthnRegister(
     username: UnsafePointer<CChar>,
     userIdPtr: UnsafePointer<UInt8>,
     userIdLen: UInt,
+    prfEnabled: UInt8,
     context: UInt64,
     callback: WebauthnCallback
 ) {
@@ -26,15 +34,19 @@ public func webauthnRegister(
     let challengeData = Data(bytes: challengePtr, count: Int(challengeLen))
     let usernameStr = String(cString: username)
     let userIdData = Data(bytes: userIdPtr, count: Int(userIdLen))
+    let wantPrf = prfEnabled != 0
 
     Task { @MainActor in
         let handler = PasskeyHandler()
+        activePasskeyHandler = handler
+        defer { activePasskeyHandler = nil }
         do {
             let auth = try await handler.register(
                 domain: domainStr,
                 challenge: challengeData,
                 username: usernameStr,
-                userID: userIdData
+                userID: userIdData,
+                prfEnabled: wantPrf
             )
 
             let json = try registrationJSON(from: auth)
@@ -51,6 +63,10 @@ public func webauthnAuthenticate(
     challengePtr: UnsafePointer<UInt8>,
     challengeLen: UInt,
     allowCredentialsJson: UnsafePointer<CChar>?,
+    prfSalt1Ptr: UnsafePointer<UInt8>?,
+    prfSalt1Len: UInt,
+    prfSalt2Ptr: UnsafePointer<UInt8>?,
+    prfSalt2Len: UInt,
     context: UInt64,
     callback: WebauthnCallback
 ) {
@@ -66,13 +82,20 @@ public func webauthnAuthenticate(
         }
     }
 
+    let prfSalt1: Data? = (prfSalt1Ptr != nil && prfSalt1Len > 0) ? Data(bytes: prfSalt1Ptr!, count: Int(prfSalt1Len)) : nil
+    let prfSalt2: Data? = (prfSalt2Ptr != nil && prfSalt2Len > 0) ? Data(bytes: prfSalt2Ptr!, count: Int(prfSalt2Len)) : nil
+
     Task { @MainActor in
         let handler = PasskeyHandler()
+        activePasskeyHandler = handler
+        defer { activePasskeyHandler = nil }
         do {
             let auth = try await handler.authenticate(
                 domain: domainStr,
                 challenge: challengeData,
-                allowCredentials: allowedCredentials
+                allowCredentials: allowedCredentials,
+                prfSalt1: prfSalt1,
+                prfSalt2: prfSalt2
             )
 
             let json = try assertionJSON(from: auth)
@@ -86,6 +109,14 @@ public func webauthnAuthenticate(
 @_cdecl("webauthn_free_string")
 public func webauthnFreeString(ptr: UnsafeMutablePointer<CChar>?) {
     free(ptr)
+}
+
+@_cdecl("webauthn_cancel")
+public func webauthnCancel() {
+    DispatchQueue.main.async {
+        activePasskeyHandler?.cancel()
+        activePasskeyHandler = nil
+    }
 }
 
 // MARK: - Response serialization
@@ -104,7 +135,7 @@ private func registrationJSON(from auth: ASAuthorization) throws -> [String: Any
     guard let reg = auth.credential as? ASAuthorizationPublicKeyCredentialRegistration else {
         throw BridgeError.unexpectedCredentialType
     }
-    return [
+    var json: [String: Any] = [
         "id": reg.credentialID.base64URLEncodedString(),
         "rawId": reg.credentialID.base64URLEncodedString(),
         "type": "public-key",
@@ -113,13 +144,23 @@ private func registrationJSON(from auth: ASAuthorization) throws -> [String: Any
             "clientDataJSON": reg.rawClientDataJSON.base64URLEncodedString()
         ]
     ]
+
+    // Extract PRF registration result (macOS 15+)
+    if #available(macOS 15.0, *) {
+        if let platformReg = reg as? ASAuthorizationPlatformPublicKeyCredentialRegistration,
+           let prfResult = platformReg.prf {
+            json["prf"] = ["enabled": prfResult.isSupported]
+        }
+    }
+
+    return json
 }
 
 private func assertionJSON(from auth: ASAuthorization) throws -> [String: Any] {
     guard let assertion = auth.credential as? ASAuthorizationPublicKeyCredentialAssertion else {
         throw BridgeError.unexpectedCredentialType
     }
-    return [
+    var json: [String: Any] = [
         "id": assertion.credentialID.base64URLEncodedString(),
         "rawId": assertion.credentialID.base64URLEncodedString(),
         "type": "public-key",
@@ -130,6 +171,24 @@ private func assertionJSON(from auth: ASAuthorization) throws -> [String: Any] {
             "userHandle": assertion.userID.base64URLEncodedString()
         ]
     ]
+
+    // Extract PRF assertion result (macOS 15+)
+    if #available(macOS 15.0, *) {
+        if let platformAssertion = assertion as? ASAuthorizationPlatformPublicKeyCredentialAssertion,
+           let prfResult = platformAssertion.prf {
+            let firstData = prfResult.first.withUnsafeBytes { Data($0) }
+            var prfDict: [String: Any] = [
+                "first": firstData.base64URLEncodedString()
+            ]
+            if let second = prfResult.second {
+                let secondData = second.withUnsafeBytes { Data($0) }
+                prfDict["second"] = secondData.base64URLEncodedString()
+            }
+            json["prf"] = prfDict
+        }
+    }
+
+    return json
 }
 
 // MARK: - Helpers

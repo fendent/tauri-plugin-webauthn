@@ -46,6 +46,7 @@ extern "C" {
   );
 
   fn webauthn_free_string(ptr: *mut c_char);
+  fn webauthn_cancel();
 }
 
 /// Access to the webauthn APIs.
@@ -174,6 +175,10 @@ impl<R: Runtime> Authenticator<R> for Webauthn<R> {
 
     let json = await_swift_result(receiver, timeout)?;
     parse_authentication_response(&json)
+  }
+
+  fn cancel(&self) {
+    unsafe { webauthn_cancel() };
   }
 }
 
