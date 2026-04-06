@@ -34,6 +34,15 @@
   let settingsRpId = $state('');
   let settingsRpOrigin = $state('');
 
+  function generateSalt(): string {
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    return btoa(String.fromCharCode(...bytes))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  }
+
   function timestamp() {
     return new Date().toLocaleTimeString();
   }
@@ -287,8 +296,10 @@
     <div class="action-group">
       <h3>Authenticate (discoverable)</h3>
       <div class="row">
-        <input placeholder="Salt 1" bind:value={prfSalt1} disabled={busy} />
-        <input placeholder="Salt 2" bind:value={prfSalt2} disabled={busy} />
+        <input placeholder="Salt 1 (32 bytes, base64url)" bind:value={prfSalt1} disabled={busy} />
+        <button type="button" class="secondary small" onclick={() => prfSalt1 = generateSalt()} disabled={busy}>Gen</button>
+        <input placeholder="Salt 2 (32 bytes, base64url)" bind:value={prfSalt2} disabled={busy} />
+        <button type="button" class="secondary small" onclick={() => prfSalt2 = generateSalt()} disabled={busy}>Gen</button>
         <button onclick={auth} disabled={busy}>Authenticate</button>
       </div>
     </div>
@@ -297,8 +308,10 @@
       <h3>Authenticate (by username)</h3>
       <form class="row" onsubmit={(e) => { e.preventDefault(); auth_non_discoverable(); }}>
         <input placeholder="Username" bind:value={authName} disabled={busy} />
-        <input placeholder="Salt 1" bind:value={prfSalt1} disabled={busy} />
-        <input placeholder="Salt 2" bind:value={prfSalt2} disabled={busy} />
+        <input placeholder="Salt 1 (32 bytes, base64url)" bind:value={prfSalt1} disabled={busy} />
+        <button type="button" class="secondary small" onclick={() => prfSalt1 = generateSalt()} disabled={busy}>Gen</button>
+        <input placeholder="Salt 2 (32 bytes, base64url)" bind:value={prfSalt2} disabled={busy} />
+        <button type="button" class="secondary small" onclick={() => prfSalt2 = generateSalt()} disabled={busy}>Gen</button>
         <button type="submit" disabled={busy}>Authenticate</button>
       </form>
     </div>
@@ -502,6 +515,11 @@
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  button.small {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
   }
 
   .pin-prompt {
