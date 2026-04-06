@@ -20,6 +20,9 @@
   let name = $state('');
   let authName = $state('');
   let pin = $state('');
+  let enablePrf = $state(false);
+  let prfSalt1 = $state('');
+  let prfSalt2 = $state('');
   let logs = $state<LogEntry[]>([]);
   let keys = $state<string[]>([]);
   let needsPin = $state(false);
@@ -99,7 +102,7 @@
       log('info', `Starting registration for "${name}"...`);
       let options: PublicKeyCredentialCreationOptionsJSON = await invoke(
         'reg_start',
-        { name }
+        { name, enablePrf }
       );
       log('info', 'Got challenge from server. Waiting for authenticator...');
       log('action', 'Use Touch ID, security key, or passkey now.');
@@ -123,14 +126,17 @@
     try {
       log('info', 'Starting discoverable authentication...');
       let options: PublicKeyCredentialRequestOptionsJSON =
-        await invoke('auth_start');
+        await invoke('auth_start', { salt1: prfSalt1 || null, salt2: prfSalt2 || null });
       log('info', 'Got challenge. Waiting for authenticator...');
       log('action', 'Use Touch ID, security key, or passkey now.');
 
       let response = await authenticate(rpOrigin, options);
       log('info', 'Got response from authenticator. Verifying...');
 
-      await invoke('auth_finish', { response });
+      const result = await invoke('auth_finish', { response });
+      if (result) {
+        log('success', `PRF Results: ${JSON.stringify(result)}`);
+      }
       log('success', 'Authentication successful!');
     } catch (e: any) {
       log('error', `Authentication failed: ${e?.message ?? e}`);
@@ -151,7 +157,7 @@
       log('info', `Starting authentication for "${authName}"...`);
       let options: PublicKeyCredentialRequestOptionsJSON = await invoke(
         'auth_start_non_discoverable',
-        { name: authName }
+        { name: authName, salt1: prfSalt1 || null, salt2: prfSalt2 || null }
       );
       log('info', 'Got challenge. Waiting for authenticator...');
       log('action', 'Use Touch ID, security key, or passkey now.');
@@ -159,7 +165,10 @@
       let response = await authenticate(rpOrigin, options);
       log('info', 'Got response from authenticator. Verifying...');
 
-      await invoke('auth_finish_non_discoverable', { response });
+      const result = await invoke('auth_finish_non_discoverable', { response });
+      if (result) {
+        log('success', `PRF Results: ${JSON.stringify(result)}`);
+      }
       log('success', 'Authentication successful!');
     } catch (e: any) {
       log('error', `Authentication failed: ${e?.message ?? e}`);
@@ -267,6 +276,10 @@
       <h3>Register</h3>
       <form class="row" onsubmit={(e) => { e.preventDefault(); reg(); }}>
         <input placeholder="Username" bind:value={name} disabled={busy} />
+        <label class="checkbox-label">
+          <input type="checkbox" bind:checked={enablePrf} disabled={busy} />
+          Enable PRF
+        </label>
         <button type="submit" disabled={busy}>Register</button>
       </form>
     </div>
@@ -274,6 +287,8 @@
     <div class="action-group">
       <h3>Authenticate (discoverable)</h3>
       <div class="row">
+        <input placeholder="Salt 1" bind:value={prfSalt1} disabled={busy} />
+        <input placeholder="Salt 2" bind:value={prfSalt2} disabled={busy} />
         <button onclick={auth} disabled={busy}>Authenticate</button>
       </div>
     </div>
@@ -282,6 +297,8 @@
       <h3>Authenticate (by username)</h3>
       <form class="row" onsubmit={(e) => { e.preventDefault(); auth_non_discoverable(); }}>
         <input placeholder="Username" bind:value={authName} disabled={busy} />
+        <input placeholder="Salt 1" bind:value={prfSalt1} disabled={busy} />
+        <input placeholder="Salt 2" bind:value={prfSalt2} disabled={busy} />
         <button type="submit" disabled={busy}>Authenticate</button>
       </form>
     </div>
@@ -436,6 +453,22 @@
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: #666;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .checkbox-label input {
+    flex: none;
+    width: auto;
   }
 
   input {
