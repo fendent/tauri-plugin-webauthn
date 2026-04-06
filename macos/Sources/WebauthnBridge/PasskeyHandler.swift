@@ -6,9 +6,11 @@ import AppKit
 public final class PasskeyHandler: NSObject {
     private var registrationContinuation: CheckedContinuation<ASAuthorization, Error>?
     private var assertionContinuation: CheckedContinuation<ASAuthorization, Error>?
+    private var activeController: ASAuthorizationController?
 
     public func register(
-        domain: String, challenge: Data, username: String, userID: Data
+        domain: String, challenge: Data, username: String, userID: Data,
+        prfEnabled: Bool
     ) async throws -> ASAuthorization {
         let platformProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         let platformRequest = platformProvider.createCredentialRegistrationRequest(
@@ -16,6 +18,12 @@ public final class PasskeyHandler: NSObject {
             name: username,
             userID: userID
         )
+
+        if prfEnabled {
+            if #available(macOS 15.0, *) {
+                platformRequest.prf = .checkForSupport
+            }
+        }
 
         let securityKeyProvider = ASAuthorizationSecurityKeyPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         let securityKeyRequest = securityKeyProvider.createCredentialRegistrationRequest(
@@ -34,12 +42,14 @@ public final class PasskeyHandler: NSObject {
 
         return try await withCheckedThrowingContinuation { continuation in
             self.registrationContinuation = continuation
+            self.activeController = controller
             controller.performRequests()
         }
     }
 
     public func authenticate(
-        domain: String, challenge: Data, allowCredentials: [Data]
+        domain: String, challenge: Data, allowCredentials: [Data],
+        prfSalt1: Data?, prfSalt2: Data?
     ) async throws -> ASAuthorization {
         let platformProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         let platformRequest = platformProvider.createCredentialAssertionRequest(challenge: challenge)
@@ -59,12 +69,26 @@ public final class PasskeyHandler: NSObject {
             }
         }
 
+        // PRF is only supported on platform authenticators (passkeys), not security keys
+        if let salt1 = prfSalt1 {
+            if #available(macOS 15.0, *) {
+                let inputValues: ASAuthorizationPublicKeyCredentialPRFAssertionInput.InputValues
+                if let salt2 = prfSalt2 {
+                    inputValues = .saltInput1(salt1, saltInput2: salt2)
+                } else {
+                    inputValues = .saltInput1(salt1)
+                }
+                platformRequest.prf = .inputValues(inputValues)
+            }
+        }
+
         let controller = ASAuthorizationController(authorizationRequests: [platformRequest, securityKeyRequest])
         controller.delegate = self
         controller.presentationContextProvider = self
 
         return try await withCheckedThrowingContinuation { continuation in
             self.assertionContinuation = continuation
+            self.activeController = controller
             controller.performRequests()
         }
     }
@@ -78,6 +102,7 @@ extension PasskeyHandler: ASAuthorizationControllerDelegate, ASAuthorizationCont
     public func authorizationController(
         controller: ASAuthorizationController, didCompleteWithAuthorization auth: ASAuthorization
     ) {
+        activeController = nil
         if auth.credential is ASAuthorizationPlatformPublicKeyCredentialRegistration
             || auth.credential is ASAuthorizationSecurityKeyPublicKeyCredentialRegistration {
             registrationContinuation?.resume(returning: auth)
@@ -90,6 +115,7 @@ extension PasskeyHandler: ASAuthorizationControllerDelegate, ASAuthorizationCont
     }
 
     public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        activeController = nil
         registrationContinuation?.resume(throwing: error)
         registrationContinuation = nil
         assertionContinuation?.resume(throwing: error)
