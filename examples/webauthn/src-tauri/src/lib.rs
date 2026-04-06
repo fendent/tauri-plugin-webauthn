@@ -274,7 +274,11 @@ async fn auth_finish(
     .finish_discoverable_authentication(&response, passkey_auth, &[(&passkey).into()])
     .log_err("Failed to verify authentication")?;
 
-  // Extract PRF results from extensions
+  // Extract PRF results from clientExtensionResults. Note: this field is NOT
+  // covered by the authenticator's signature per the WebAuthn spec. On macOS/iOS
+  // the native bridge constructs this from the platform-verified PRF output,
+  // so it is trustworthy in practice. A tampered Tauri frontend could inject
+  // arbitrary values here.
   let prf_results = response.extensions.hmac_get_secret.as_ref().map(|hmac| {
     PrfResults {
       first: URL_SAFE_NO_PAD.encode(hmac.output1.as_ref()),
@@ -301,7 +305,11 @@ async fn auth_finish_non_discoverable(
     .finish_passkey_authentication(&response, &passkey_auth)
     .log_err("Failed to verify authentication")?;
 
-  // Extract PRF results from extensions
+  // Extract PRF results from clientExtensionResults. Note: this field is NOT
+  // covered by the authenticator's signature per the WebAuthn spec. On macOS/iOS
+  // the native bridge constructs this from the platform-verified PRF output,
+  // so it is trustworthy in practice. A tampered Tauri frontend could inject
+  // arbitrary values here.
   let prf_results = response.extensions.hmac_get_secret.as_ref().map(|hmac| {
     PrfResults {
       first: URL_SAFE_NO_PAD.encode(hmac.output1.as_ref()),
