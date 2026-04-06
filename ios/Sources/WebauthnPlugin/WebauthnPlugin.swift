@@ -9,6 +9,7 @@ private struct RegistrationOptions: Decodable {
     let rp: RelyingParty
     let user: User
     let challenge: String
+    let extensions: RegistrationExtensions?
 
     struct RelyingParty: Decodable {
         let id: String
@@ -18,21 +19,57 @@ private struct RegistrationOptions: Decodable {
         let id: String
         let name: String
     }
+
+    struct RegistrationExtensions: Decodable {
+        let hmacCreateSecret: Bool?
+
+        enum CodingKeys: String, CodingKey {
+            case hmacCreateSecret = "hmac_create_secret"
+        }
+    }
 }
 
 private struct AuthenticationOptions: Decodable {
     let rpId: String
     let challenge: String
     let allowCredentials: [CredentialDescriptor]?
+    let extensions: AuthenticationExtensions?
 
     struct CredentialDescriptor: Decodable {
         let id: String
+    }
+
+    struct AuthenticationExtensions: Decodable {
+        let hmacGetSecret: HmacGetSecretInput?
+
+        enum CodingKeys: String, CodingKey {
+            case hmacGetSecret = "hmac_get_secret"
+        }
+    }
+
+    struct HmacGetSecretInput: Decodable {
+        let output1: String  // base64url-encoded salt
+        let output2: String? // optional second salt
     }
 }
 
 // MARK: - Plugin
 
 class WebauthnPlugin: Plugin {
+    @MainActor private var activeHandler: PasskeyHandler?
+
+    @objc func cancel(_ invoke: Invoke) {
+        guard #available(iOS 15.0, *) else {
+            invoke.resolve()
+            return
+        }
+        Task { @MainActor in
+            self.activeHandler?.cancel()
+            self.activeHandler = nil
+        }
+        invoke.resolve()
+    }
+
     @objc func register(_ invoke: Invoke) {
         guard #available(iOS 15.0, *) else {
             invoke.reject("WebAuthn requires iOS 15.0 or later")
@@ -56,14 +93,19 @@ class WebauthnPlugin: Plugin {
             return
         }
 
+        let prfEnabled = options.extensions?.hmacCreateSecret ?? false
+
         Task { @MainActor in
             let handler = PasskeyHandler()
+            self.activeHandler = handler
+            defer { self.activeHandler = nil }
             do {
                 let auth = try await handler.register(
                     domain: options.rp.id,
                     challenge: challengeData,
                     username: options.user.name,
-                    userID: userIDData
+                    userID: userIDData,
+                    prfEnabled: prfEnabled
                 )
                 let json = try registrationJSON(from: auth)
                 invoke.resolve(json)
@@ -95,13 +137,21 @@ class WebauthnPlugin: Plugin {
         let credentials = options.allowCredentials ?? []
         let allowedCredentialData = credentials.compactMap { base64URLDecode($0.id) }
 
+        // Extract PRF salts from extensions
+        let prfSalt1 = options.extensions?.hmacGetSecret.flatMap { base64URLDecode($0.output1) }
+        let prfSalt2 = options.extensions?.hmacGetSecret?.output2.flatMap { base64URLDecode($0) }
+
         Task { @MainActor in
             let handler = PasskeyHandler()
+            self.activeHandler = handler
+            defer { self.activeHandler = nil }
             do {
                 let auth = try await handler.authenticate(
                     domain: options.rpId,
                     challenge: challengeData,
-                    allowCredentials: allowedCredentialData
+                    allowCredentials: allowedCredentialData,
+                    prfSalt1: prfSalt1,
+                    prfSalt2: prfSalt2
                 )
                 let json = try assertionJSON(from: auth)
                 invoke.resolve(json)
