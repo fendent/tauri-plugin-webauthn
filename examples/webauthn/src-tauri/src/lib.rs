@@ -62,9 +62,11 @@ fn build_webauthn(rp_id: &str, rp_origin: &str) -> Result<Webauthn, String> {
 }
 
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use webauthn_rs::{
   prelude::{
-    DiscoverableAuthentication, Passkey, PasskeyAuthentication, PasskeyRegistration, Uuid,
+    Base64UrlSafeData, DiscoverableAuthentication, Passkey, PasskeyAuthentication,
+    PasskeyRegistration, Uuid,
   },
   Webauthn, WebauthnBuilder,
 };
@@ -80,6 +82,7 @@ async fn reg_start(
   webauthn: State<'_, Mutex<Webauthn>>,
   users: State<'_, Mutex<HashMap<String, Uuid>>>,
   name: &str,
+  enable_prf: bool,
 ) -> Result<PublicKeyCredentialCreationOptions, String> {
   let uuid = *users.lock().await.entry(name.to_string()).or_insert(Uuid::new_v4());
 
@@ -97,7 +100,15 @@ async fn reg_start(
 
   state.lock().await.replace((state_val, uuid));
 
-  Ok(challenge.public_key)
+  let mut public_key = challenge.public_key;
+  if enable_prf {
+    public_key.extensions = Some(webauthn_rs_proto::RequestRegistrationExtensions {
+      hmac_create_secret: Some(true),
+      ..Default::default()
+    });
+  }
+
+  Ok(public_key)
 }
 
 #[tauri::command]
@@ -128,6 +139,8 @@ async fn reg_finish(
 async fn auth_start(
   webauthn: State<'_, Mutex<Webauthn>>,
   state: State<'_, Mutex<Option<DiscoverableAuthentication>>>,
+  salt1: Option<String>,
+  salt2: Option<String>,
 ) -> Result<PublicKeyCredentialRequestOptions, String> {
   let (challenge, state_val) = webauthn
     .lock()
@@ -137,7 +150,31 @@ async fn auth_start(
 
   state.lock().await.replace(state_val);
 
-  Ok(challenge.public_key)
+  let mut public_key = challenge.public_key;
+  if let Some(s1) = salt1 {
+    let salts = if let Some(s2) = salt2 {
+      vec![s1, s2]
+    } else {
+      vec![s1]
+    };
+    let decode_salt = |s: &str| -> Result<Base64UrlSafeData, String> {
+      let bytes = URL_SAFE_NO_PAD.decode(s).log_err("Invalid salt encoding")?;
+      if bytes.len() != 32 {
+        return Err(format!("PRF salt must be exactly 32 bytes, got {}", bytes.len()));
+      }
+      Ok(Base64UrlSafeData::from(bytes))
+    };
+    public_key.extensions = Some(webauthn_rs_proto::RequestAuthenticationExtensions {
+      hmac_get_secret: Some(webauthn_rs_proto::HmacGetSecretInput {
+        output1: decode_salt(&salts[0])?,
+        output2: salts.get(1).map(|s| decode_salt(s)).transpose()?,
+      }),
+      appid: None,
+      uvm: None,
+    });
+  }
+
+  Ok(public_key)
 }
 
 #[tauri::command]
@@ -147,6 +184,8 @@ async fn auth_start_non_discoverable(
   state: State<'_, Mutex<Option<PasskeyAuthentication>>>,
   passkeys: State<'_, Mutex<HashMap<Uuid, Vec<Passkey>>>>,
   name: &str,
+  salt1: Option<String>,
+  salt2: Option<String>,
 ) -> Result<PublicKeyCredentialRequestOptions, String> {
   let uuid = *users
     .lock()
@@ -169,7 +208,37 @@ async fn auth_start_non_discoverable(
 
   state.lock().await.replace(state_val);
 
-  Ok(challenge.public_key)
+  let mut public_key = challenge.public_key;
+  if let Some(s1) = salt1 {
+    let salts = if let Some(s2) = salt2 {
+      vec![s1, s2]
+    } else {
+      vec![s1]
+    };
+    let decode_salt = |s: &str| -> Result<Base64UrlSafeData, String> {
+      let bytes = URL_SAFE_NO_PAD.decode(s).log_err("Invalid salt encoding")?;
+      if bytes.len() != 32 {
+        return Err(format!("PRF salt must be exactly 32 bytes, got {}", bytes.len()));
+      }
+      Ok(Base64UrlSafeData::from(bytes))
+    };
+    public_key.extensions = Some(webauthn_rs_proto::RequestAuthenticationExtensions {
+      hmac_get_secret: Some(webauthn_rs_proto::HmacGetSecretInput {
+        output1: decode_salt(&salts[0])?,
+        output2: salts.get(1).map(|s| decode_salt(s)).transpose()?,
+      }),
+      appid: None,
+      uvm: None,
+    });
+  }
+
+  Ok(public_key)
+}
+
+#[derive(Serialize, Deserialize)]
+struct PrfResults {
+  first: String,
+  second: Option<String>,
 }
 
 #[tauri::command]
@@ -178,7 +247,7 @@ async fn auth_finish(
   state: State<'_, Mutex<Option<DiscoverableAuthentication>>>,
   passkeys: State<'_, Mutex<HashMap<Uuid, Vec<Passkey>>>>,
   response: PublicKeyCredential,
-) -> Result<(), String> {
+) -> Result<Option<PrfResults>, String> {
   let (user, cred_id) = webauthn
     .lock()
     .await
@@ -204,7 +273,16 @@ async fn auth_finish(
     .await
     .finish_discoverable_authentication(&response, passkey_auth, &[(&passkey).into()])
     .log_err("Failed to verify authentication")?;
-  Ok(())
+
+  // Extract PRF results from extensions
+  let prf_results = response.extensions.hmac_get_secret.as_ref().map(|hmac| {
+    PrfResults {
+      first: URL_SAFE_NO_PAD.encode(hmac.output1.as_ref()),
+      second: hmac.output2.as_ref().map(|s| URL_SAFE_NO_PAD.encode(s.as_ref())),
+    }
+  });
+
+  Ok(prf_results)
 }
 
 #[tauri::command]
@@ -212,7 +290,7 @@ async fn auth_finish_non_discoverable(
   webauthn: State<'_, Mutex<Webauthn>>,
   state: State<'_, Mutex<Option<PasskeyAuthentication>>>,
   response: PublicKeyCredential,
-) -> Result<(), String> {
+) -> Result<Option<PrfResults>, String> {
   let passkey_auth = state
     .lock()
     .await
@@ -222,7 +300,16 @@ async fn auth_finish_non_discoverable(
   webauthn
     .finish_passkey_authentication(&response, &passkey_auth)
     .log_err("Failed to verify authentication")?;
-  Ok(())
+
+  // Extract PRF results from extensions
+  let prf_results = response.extensions.hmac_get_secret.as_ref().map(|hmac| {
+    PrfResults {
+      first: URL_SAFE_NO_PAD.encode(hmac.output1.as_ref()),
+      second: hmac.output2.as_ref().map(|s| URL_SAFE_NO_PAD.encode(s.as_ref())),
+    }
+  });
+
+  Ok(prf_results)
 }
 
 #[tauri::command]
