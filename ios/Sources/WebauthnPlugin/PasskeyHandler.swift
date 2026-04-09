@@ -1,16 +1,16 @@
 import Foundation
 import AuthenticationServices
-import AppKit
+import UIKit
 
+@available(iOS 15.0, *)
 @MainActor
-public final class PasskeyHandler: NSObject {
+final class PasskeyHandler: NSObject {
     private var registrationContinuation: CheckedContinuation<ASAuthorization, Error>?
     private var assertionContinuation: CheckedContinuation<ASAuthorization, Error>?
     private var activeController: ASAuthorizationController?
 
-    public func register(
-        domain: String, challenge: Data, username: String, userID: Data,
-        prfEnabled: Bool
+    func register(
+        domain: String, challenge: Data, username: String, userID: Data
     ) async throws -> ASAuthorization {
         let platformProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         let platformRequest = platformProvider.createCredentialRegistrationRequest(
@@ -18,12 +18,6 @@ public final class PasskeyHandler: NSObject {
             name: username,
             userID: userID
         )
-
-        if prfEnabled {
-            if #available(macOS 15.0, *) {
-                platformRequest.prf = .checkForSupport
-            }
-        }
 
         let securityKeyProvider = ASAuthorizationSecurityKeyPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         let securityKeyRequest = securityKeyProvider.createCredentialRegistrationRequest(
@@ -47,9 +41,8 @@ public final class PasskeyHandler: NSObject {
         }
     }
 
-    public func authenticate(
-        domain: String, challenge: Data, allowCredentials: [Data],
-        prfSalt1: Data?, prfSalt2: Data?
+    func authenticate(
+        domain: String, challenge: Data, allowCredentials: [Data]
     ) async throws -> ASAuthorization {
         let platformProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         let platformRequest = platformProvider.createCredentialAssertionRequest(challenge: challenge)
@@ -69,19 +62,6 @@ public final class PasskeyHandler: NSObject {
             }
         }
 
-        // PRF is only supported on platform authenticators (passkeys), not security keys
-        if let salt1 = prfSalt1 {
-            if #available(macOS 15.0, *) {
-                let inputValues: ASAuthorizationPublicKeyCredentialPRFAssertionInput.InputValues
-                if let salt2 = prfSalt2 {
-                    inputValues = .saltInput1(salt1, saltInput2: salt2)
-                } else {
-                    inputValues = .saltInput1(salt1)
-                }
-                platformRequest.prf = .inputValues(inputValues)
-            }
-        }
-
         let controller = ASAuthorizationController(authorizationRequests: [platformRequest, securityKeyRequest])
         controller.delegate = self
         controller.presentationContextProvider = self
@@ -93,7 +73,7 @@ public final class PasskeyHandler: NSObject {
         }
     }
 
-    public func cancel() {
+    func cancel() {
         activeController = nil
         registrationContinuation?.resume(throwing: CancellationError())
         registrationContinuation = nil
@@ -102,12 +82,20 @@ public final class PasskeyHandler: NSObject {
     }
 }
 
+// MARK: - ASAuthorizationControllerDelegate
+
+@available(iOS 15.0, *)
 extension PasskeyHandler: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
-    public func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return NSApplication.shared.windows.first ?? NSWindow()
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        let scene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+        return scene?.windows.first(where: { $0.isKeyWindow })
+            ?? scene?.windows.first
+            ?? UIWindow()
     }
 
-    public func authorizationController(
+    func authorizationController(
         controller: ASAuthorizationController, didCompleteWithAuthorization auth: ASAuthorization
     ) {
         activeController = nil
@@ -122,11 +110,76 @@ extension PasskeyHandler: ASAuthorizationControllerDelegate, ASAuthorizationCont
         }
     }
 
-    public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
         activeController = nil
         registrationContinuation?.resume(throwing: error)
         registrationContinuation = nil
         assertionContinuation?.resume(throwing: error)
         assertionContinuation = nil
     }
+}
+
+// MARK: - Response Serialization
+
+enum PasskeyHandlerError: LocalizedError {
+    case unexpectedCredentialType
+
+    var errorDescription: String? {
+        "Unexpected credential type in authorization response"
+    }
+}
+
+@available(iOS 15.0, *)
+func registrationJSON(from auth: ASAuthorization) throws -> [String: Any] {
+    guard let reg = auth.credential as? ASAuthorizationPublicKeyCredentialRegistration else {
+        throw PasskeyHandlerError.unexpectedCredentialType
+    }
+    return [
+        "id": reg.credentialID.base64URLEncodedString(),
+        "rawId": reg.credentialID.base64URLEncodedString(),
+        "type": "public-key",
+        "response": [
+            "attestationObject": (reg.rawAttestationObject ?? Data()).base64URLEncodedString(),
+            "clientDataJSON": reg.rawClientDataJSON.base64URLEncodedString()
+        ]
+    ]
+}
+
+@available(iOS 15.0, *)
+func assertionJSON(from auth: ASAuthorization) throws -> [String: Any] {
+    guard let assertion = auth.credential as? ASAuthorizationPublicKeyCredentialAssertion else {
+        throw PasskeyHandlerError.unexpectedCredentialType
+    }
+    return [
+        "id": assertion.credentialID.base64URLEncodedString(),
+        "rawId": assertion.credentialID.base64URLEncodedString(),
+        "type": "public-key",
+        "response": [
+            "authenticatorData": assertion.rawAuthenticatorData.base64URLEncodedString(),
+            "clientDataJSON": assertion.rawClientDataJSON.base64URLEncodedString(),
+            "signature": assertion.signature.base64URLEncodedString(),
+            "userHandle": assertion.userID.base64URLEncodedString()
+        ]
+    ]
+}
+
+// MARK: - Data Helpers
+
+extension Data {
+    func base64URLEncodedString() -> String {
+        return self.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+}
+
+func base64URLDecode(_ str: String) -> Data? {
+    var base64 = str
+        .replacingOccurrences(of: "-", with: "+")
+        .replacingOccurrences(of: "_", with: "/")
+    while base64.count % 4 != 0 {
+        base64.append("=")
+    }
+    return Data(base64Encoded: base64)
 }

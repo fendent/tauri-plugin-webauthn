@@ -16,8 +16,8 @@ pub enum Error {
   SerdeJson(#[from] serde_json::Error),
   #[error("No token found")]
   NoToken,
-  #[error("Failed to create authenticator")]
-  Authenticator,
+  #[error("Authenticator error: {0}")]
+  Authenticator(String),
   #[cfg(not(any(
     target_os = "android",
     target_os = "ios",
